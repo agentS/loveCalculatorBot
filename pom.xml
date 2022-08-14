@@ -88,10 +88,9 @@
             <version>6.3.1</version>
         </dependency>
         <dependency>
-            <groupId>com.github.kotlin-telegram-bot</groupId>
-            <artifactId>kotlin-telegram-bot</artifactId>
-            <version>6.0.7</version>
+            <groupId>com.github.elbekD</groupId>
+            <artifactId>kt-telegram-bot</artifactId>
+            <version>2.1.5</version>
         </dependency>
     </dependencies>
-
 </project>

@@ -42,4 +42,11 @@ class NameExtractorUtilTest {
             val (leftHandSide, rightHandSide) = extractNamesFromMessage("Burns")
         }
     }
+
+    @Test
+    fun textExtractOnlyOneNameWithAmpersand() {
+        assertThrows<IllegalArgumentException> {
+            val (leftHandSide, rightHandSide) = extractNamesFromMessage("Burns & ")
+        }
+    }
 }
