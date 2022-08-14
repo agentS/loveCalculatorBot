@@ -2,6 +2,7 @@ package com.schurkenhuber.lovecalculator.telegrambot
 
 import com.elbekd.bot.Bot
 import com.elbekd.bot.model.toChatId
+import com.elbekd.bot.server
 import com.elbekd.bot.types.Message
 import com.schurkenhuber.lovecalculator.calculateLoveScore
 import com.schurkenhuber.lovecalculator.telegrambot.util.extractNamesFromMessage
@@ -12,7 +13,14 @@ private const val COMMAND_LOVE = "/love"
 
 fun main() {
     val dotenv = dotenv()
-    val bot = Bot.createPolling(dotenv.get("TELEGRAM_BOT_TOKEN"))
+    // val bot = Bot.createPolling(dotenv.get("TELEGRAM_BOT_TOKEN"))
+    val bot = Bot.createWebhook(dotenv.get("TELEGRAM_BOT_TOKEN"), dotenv.get("TELEGRAM_USERNAME")) {
+        this.url = dotenv.get("TELEGRAM_BOT_WEBHOOK_URL")
+        this.server {
+            this.host = dotenv.get("TELEGRAM_BOT_LISTENING_ADDRESS")
+            this.port = Integer.parseInt(dotenv.get("TELEGRAM_BOT_LISTENING_PORT"))
+        }
+    }
     bot.onCommand(COMMAND_START) { (message, _) ->
         bot.sendMessage(message.chat.id.toChatId(), "Hello, I am the love calculator bot. I can tell you the probability of love between two people based on their names. My sophisticated algorithm guarantees accurate and reproducible results. So why don't you enter your name and the name of your crush.")
     }

@@ -31,7 +31,7 @@ private fun computeLetterFrequency(leftHandSide: String, rightHandSide: String):
 
 private fun addLetterFrequencyVector(letterFrequencies: List<Int>): Int {
     return when (letterFrequencies.size) {
-        2 -> Integer.parseInt("${letterFrequencies[0]}${letterFrequencies[1]}")
+        2 -> letterFrequencies[0] * 10 + letterFrequencies[1]
         1 -> letterFrequencies[0]
         0 -> 0
         else ->
