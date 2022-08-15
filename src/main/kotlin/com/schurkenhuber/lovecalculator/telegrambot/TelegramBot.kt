@@ -4,9 +4,11 @@ import com.elbekd.bot.Bot
 import com.elbekd.bot.model.toChatId
 import com.elbekd.bot.server
 import com.elbekd.bot.types.Message
+import com.elbekd.bot.util.SendingFile
 import com.schurkenhuber.lovecalculator.calculateLoveScore
 import com.schurkenhuber.lovecalculator.telegrambot.util.extractNamesFromMessage
 import io.github.cdimascio.dotenv.dotenv
+import java.io.File
 
 private const val COMMAND_START = "/start"
 private const val COMMAND_LOVE = "/love"
@@ -48,11 +50,34 @@ suspend fun handleLoveScoreComputation(bot: Bot, message: Message, namesCombined
     try {
         val (leftHandSide, rightHandSide) = extractNamesFromMessage(namesCombined)
         val loveScore = calculateLoveScore(leftHandSide, rightHandSide)
+        val (photoFilename, line, imageType) = selectGIFFilenameAndLine(loveScore)
         bot.sendMessage(message.chat.id.toChatId(), "My highly advanced algorithm computed a love score of $loveScore for $leftHandSide and $rightHandSide.")
+        val photoPath = "img/$photoFilename"
+        if (imageType == ImageType.GIF) {
+            bot.sendVideo(message.chat.id.toChatId(), video = SendingFile(loadResourceFile(photoPath)))
+        } else if (imageType == ImageType.PHOTO) {
+            bot.sendPhoto(message.chat.id.toChatId(), photo = SendingFile(loadResourceFile(photoPath)))
+        }
+        bot.sendMessage(message.chat.id.toChatId(), line)
     } catch (exception: Throwable) {
         sendUsageMessage(bot, message)
     }
 }
+
+fun selectGIFFilenameAndLine(loveScore: Int): Triple<String, String, ImageType> =
+    when (loveScore) {
+        in 0..15 -> Triple("molemanKiss.gif", "I'm sorry, but this relationship will never work.", ImageType.GIF)
+        in 16..30 -> Triple("guessWhoLikesYou.gif", "You might endanger your health by trying to make this relationship work.", ImageType.GIF)
+        in 31..45 -> Triple("theDud.gif", "You got the dud!", ImageType.GIF)
+        in 46..60 -> Triple("iChooseYou.gif", "This relationship is a wildcard. It might or might not work.", ImageType.GIF)
+        in 61..70 -> Triple("willy.gif", "Lead on!", ImageType.GIF)
+        in 71..90 -> Triple("colonelHomer.gif", "A relationship made to last all your lives.", ImageType.GIF)
+        in 91..100 -> Triple("aerosmithLoveTester.jpg", "A match made in heaven.", ImageType.PHOTO)
+        else -> throw IllegalArgumentException("The love score must be between 0% and 100%.")
+    }
+
+fun loadResourceFile(path: String): File =
+    File(ClassLoader.getSystemResource(path).file)
 
 suspend fun sendUsageMessage(bot: Bot, message: Message) {
     bot.sendMessage(message.chat.id.toChatId(), "Please specify the names of the crushes separated by either an ampersand character or a space, e.g. Homer & Marge.")
