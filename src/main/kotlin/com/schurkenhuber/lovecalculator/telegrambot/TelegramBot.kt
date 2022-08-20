@@ -9,6 +9,8 @@ import com.schurkenhuber.lovecalculator.calculateLoveScore
 import com.schurkenhuber.lovecalculator.telegrambot.util.extractNamesFromMessage
 import io.github.cdimascio.dotenv.dotenv
 import java.io.File
+import java.io.FileNotFoundException
+import kotlin.io.path.outputStream
 
 private const val COMMAND_START = "/start"
 private const val COMMAND_LOVE = "/love"
@@ -66,18 +68,26 @@ suspend fun handleLoveScoreComputation(bot: Bot, message: Message, namesCombined
 
 fun selectGIFFilenameAndLine(loveScore: Int): Triple<String, String, ImageType> =
     when (loveScore) {
-        in 0..15 -> Triple("molemanKiss.gif", "I'm sorry, but this relationship will never work.", ImageType.GIF)
-        in 16..30 -> Triple("guessWhoLikesYou.gif", "You might endanger your health by trying to make this relationship work.", ImageType.GIF)
+        in 0..15 -> Triple("molemanKiss.gif", "Nobody's gay for Moleman...", ImageType.GIF)
+        in 16..30 -> Triple("guessWhoLikesYou.gif", "If you're together already, we predict a breakup in 10, 9, 8... You get the picture. If you're not together, run away and stay clear. Sorry, but this isn't going to work.", ImageType.GIF)
         in 31..45 -> Triple("theDud.gif", "You got the dud!", ImageType.GIF)
-        in 46..60 -> Triple("iChooseYou.gif", "This relationship is a wildcard. It might or might not work.", ImageType.GIF)
+        in 46..60 -> Triple("iChooseYou.gif", "Although our sophisticated algorithms say that it won't work out, why not give it a shot? We're sure you can beat probability.", ImageType.GIF)
         in 61..70 -> Triple("willy.gif", "Lead on!", ImageType.GIF)
-        in 71..90 -> Triple("colonelHomer.gif", "A relationship made to last all your lives.", ImageType.GIF)
-        in 91..100 -> Triple("aerosmithLoveTester.jpg", "A match made in heaven.", ImageType.PHOTO)
+        in 71..90 -> Triple("colonelHomer.gif", "Marriage is a lot like an orange. First you have the skin, then the sweet, sweet innards.", ImageType.GIF)
+        in 91..100 -> Triple("aerosmithLoveTester.jpg", "Wow. This is rare. This is a match made in heaven. Go make out, NOW.", ImageType.PHOTO)
         else -> throw IllegalArgumentException("The love score must be between 0% and 100%.")
     }
 
-fun loadResourceFile(path: String): File =
-    File(ClassLoader.getSystemResource(path).file)
+fun loadResourceFile(path: String): File {
+    val temporaryFile = kotlin.io.path.createTempFile()
+    val inputStream = object {}.javaClass.classLoader.getResourceAsStream(path)
+    inputStream.use { input ->
+        temporaryFile.outputStream().use { output ->
+            input?.copyTo(output) ?: throw FileNotFoundException("The file $path does not exist.")
+        }
+    }
+    return temporaryFile.toFile()
+}
 
 suspend fun sendUsageMessage(bot: Bot, message: Message) {
     bot.sendMessage(message.chat.id.toChatId(), "Please specify the names of the crushes separated by either an ampersand character or a space, e.g. Homer & Marge.")
